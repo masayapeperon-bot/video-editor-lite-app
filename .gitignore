@@ -3,3 +3,8 @@ dist/
 *.log
 .DS_Store
 .env
+
+# Remotion / dev-time generated files
+resources/video-generator/public/
+resources/video-generator/src/scenes.json
+

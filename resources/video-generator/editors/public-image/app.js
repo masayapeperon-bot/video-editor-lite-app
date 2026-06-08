@@ -88,9 +88,10 @@ function setupEvents() {
     if (file && file.type.startsWith("image/")) handleFile(file);
   });
 
-  // 差し替え / キャンセル
+  // 差し替え / キャンセル / ダウンロード
   document.getElementById("btn-commit").addEventListener("click", commitUpload);
   document.getElementById("btn-cancel").addEventListener("click", resetPreview);
+  document.getElementById("btn-download").addEventListener("click", downloadCurrent);
 
   // キーボード（input/textareaにフォーカスがない時のみ）
   document.addEventListener("keydown", (e) => {
@@ -205,6 +206,29 @@ function resizeToTarget(img) {
   }
   ctx.drawImage(img, sx, sy, sw, sh, 0, 0, TARGET_W, TARGET_H);
   return canvas.toDataURL("image/png");
+}
+
+async function downloadCurrent() {
+  const scene = scenes[currentIdx];
+  if (!scene?.hasImage) {
+    alert("ダウンロード可能な画像がありません");
+    return;
+  }
+  try {
+    const res = await fetch(`${API}/api/scenes/${scene.id}/image?t=${Date.now()}`);
+    if (!res.ok) throw new Error(`HTTP ${res.status}`);
+    const blob = await res.blob();
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = scene.imageName || `${scene.part}_scene_${String(scene.partSceneNumber).padStart(2, "0")}.png`;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+  } catch (e) {
+    alert(`ダウンロード失敗: ${e.message}`);
+  }
 }
 
 async function commitUpload() {
