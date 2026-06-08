@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8" />
+  <title>設定</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <header>
+    <h1>設定</h1>
+    <div class="actions">
+      <button class="btn" id="btn-back">戻る</button>
+    </div>
+  </header>
+
+  <main>
+    <form class="settings-form" id="form" autocomplete="off">
+      <h2>中継サーバー設定（API認証）</h2>
+
+      <div class="field">
+        <label for="proxyUrl">中継サーバーURL</label>
+        <input type="text" id="proxyUrl" />
+        <span class="help">通常変更不要</span>
+      </div>
+
+      <div class="field">
+        <label for="proxyToken">アクセストークン</label>
+        <input type="password" id="proxyToken" placeholder="オーナーから受け取ったトークンを入力" />
+        <span class="help">画像修正・音声修正で必要</span>
+      </div>
+
+      <h2 style="margin-top:16px;">ゴミ箱・バックアップ</h2>
+
+      <div class="checkbox-row">
+        <input type="checkbox" id="autoBackup" />
+        <label for="autoBackup">修正時に古いファイルをゴミ箱へ自動退避（事故防止）</label>
+      </div>
+
+      <div class="field">
+        <label for="trashRetentionDays">ゴミ箱の保持期間（日）</label>
+        <input type="number" id="trashRetentionDays" min="1" max="60" />
+        <span class="help">期限を過ぎたファイルは自動削除されます</span>
+      </div>
+
+      <h2 style="margin-top:16px;">作業フォルダ</h2>
+
+      <div class="field">
+        <label for="workDir">作業フォルダのパス</label>
+        <input type="text" id="workDir" placeholder="空欄でデフォルト" />
+        <span class="help">プロジェクトを展開する場所。空欄ならアプリのデフォルトを使用</span>
+      </div>
+
+      <div style="display:flex; gap:8px; margin-top:24px;">
+        <button type="button" class="btn btn-primary" id="btn-save">保存</button>
+        <button type="button" class="btn" id="btn-reset">標準に戻す</button>
+      </div>
+
+      <div style="margin-top:24px; padding-top:24px; border-top:1px solid #2a3142; font-size:11px; color:#666;">
+        バージョン: <span id="version">-</span>
+      </div>
+    </form>
+  </main>
+
+  <div class="toast" id="toast"></div>
+
+  <script src="settings.js"></script>
+</body>
+</html>

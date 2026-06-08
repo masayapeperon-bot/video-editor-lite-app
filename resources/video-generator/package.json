@@ -1,0 +1,26 @@
+{
+  "name": "video-generator",
+  "version": "1.0.0",
+  "private": true,
+  "scripts": {
+    "studio": "remotion studio",
+    "render": "remotion render",
+    "parse": "npx tsx scripts/parse-script.ts",
+    "audio": "npx tsx scripts/generate-audio.ts",
+    "build-scenes": "npx tsx scripts/build-scenes.ts",
+    "concat-hook": "npx tsx scripts/concat-hook.ts"
+  },
+  "dependencies": {
+    "@remotion/cli": "^4.0.443",
+    "@remotion/player": "^4.0.443",
+    "react": "^18.3.1",
+    "react-dom": "^18.3.1",
+    "remotion": "^4.0.443",
+    "zod": "^4.3.6"
+  },
+  "devDependencies": {
+    "@types/react": "^18.3.0",
+    "tsx": "^4.19.0",
+    "typescript": "^5.5.0"
+  }
+}

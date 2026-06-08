@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8" />
+  <title>動画編集アプリ</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <header>
+    <h1>動画編集アプリ</h1>
+    <div class="actions">
+      <button class="btn" id="btn-settings">設定</button>
+    </div>
+  </header>
+
+  <main>
+    <section>
+      <div class="open-actions">
+        <button class="btn btn-primary btn-lg" id="btn-open-zip">プロジェクトを開く（zip）</button>
+        <button class="btn btn-lg" id="btn-open-folder">プロジェクトフォルダを開く</button>
+      </div>
+    </section>
+
+    <section>
+      <h2>最近開いたプロジェクト</h2>
+      <div id="recent-list" class="recent-list"></div>
+      <div id="empty" class="empty" style="display:none">
+        まだプロジェクトがありません。<br />
+        上のボタンから受け取ったzipまたはフォルダを開いてください。
+      </div>
+    </section>
+  </main>
+
+  <div class="loading-overlay" id="loading">
+    <div class="loading-box">
+      <div class="spinner"></div>
+      <div class="loading-text" id="loading-text">読み込み中...</div>
+    </div>
+  </div>
+
+  <div class="toast" id="toast"></div>
+
+  <script src="index.js"></script>
+</body>
+</html>

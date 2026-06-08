@@ -1,0 +1,205 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>エンコード</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Hiragino Sans", "Noto Sans JP", sans-serif;
+      background: #1a1a2e;
+      color: #e0e0e0;
+      line-height: 1.6;
+      padding: 24px;
+    }
+    h1 { font-size: 18px; color: #fff; margin-bottom: 20px; }
+    h2 { font-size: 14px; color: #888; margin-bottom: 12px; }
+
+    .encode-section {
+      background: #16213e;
+      border: 1px solid #333;
+      border-radius: 8px;
+      padding: 20px;
+      margin-bottom: 16px;
+    }
+
+    .encode-btn {
+      padding: 12px 28px;
+      border-radius: 6px;
+      border: none;
+      cursor: pointer;
+      font-size: 14px;
+      font-weight: bold;
+      margin-right: 8px;
+      margin-bottom: 8px;
+    }
+    .encode-btn:disabled { opacity: 0.5; cursor: not-allowed; }
+
+    .btn-full {
+      background: #0f3460;
+      color: #fff;
+    }
+    .btn-full:hover:not(:disabled) { background: #1a6fb5; }
+
+    .btn-part {
+      background: #2a2a4a;
+      color: #ccc;
+      border: 1px solid #444;
+    }
+    .btn-part:hover:not(:disabled) { background: #333366; color: #fff; }
+
+    .parts-row {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+
+    #status {
+      margin-top: 20px;
+    }
+
+    .status-item {
+      background: #222244;
+      padding: 12px 16px;
+      border-radius: 6px;
+      margin-bottom: 8px;
+      font-size: 13px;
+    }
+    .status-item .label { color: #888; margin-bottom: 4px; }
+    .status-item .state { font-family: monospace; }
+    .state.running { color: #e9a545; }
+    .state.done { color: #95d5b2; }
+    .state.error { color: #e94560; }
+
+    .progress-bar {
+      width: 100%;
+      height: 6px;
+      background: #333;
+      border-radius: 3px;
+      margin-top: 8px;
+      overflow: hidden;
+    }
+    .progress-bar-fill {
+      height: 100%;
+      background: #1a6fb5;
+      transition: width 0.5s;
+    }
+
+    .output-path {
+      font-size: 12px;
+      color: #666;
+      margin-top: 4px;
+      word-break: break-all;
+    }
+
+    .loading {
+      display: inline-block;
+      width: 14px;
+      height: 14px;
+      border: 2px solid #444;
+      border-top-color: #1a6fb5;
+      border-radius: 50%;
+      animation: spin 0.6s linear infinite;
+      margin-left: 8px;
+      vertical-align: middle;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+  </style>
+</head>
+<body>
+  <h1>エンコード</h1>
+
+  <div class="encode-section" style="display:flex; align-items:center; gap:12px; padding:12px 16px; background:#1c2030; border:1px solid #2a3142; border-radius:8px;">
+    <label style="display:flex; align-items:center; gap:8px; cursor:pointer; font-size:15px;">
+      <input type="checkbox" id="useSplit" style="width:18px; height:18px;">
+      <span>分割レイアウトでエンコード（左70%画像+右30%黒）</span>
+    </label>
+  </div>
+
+  <div class="encode-section">
+    <h2>全体エンコード（起承転結統合）</h2>
+    <button class="encode-btn btn-full" onclick="startEncode('full')">全体をエンコード</button>
+  </div>
+
+  <div class="encode-section">
+    <h2>パートごとのエンコード</h2>
+    <div class="parts-row">
+      <button class="encode-btn btn-part" onclick="startEncode('起')">起をエンコード</button>
+      <button class="encode-btn btn-part" onclick="startEncode('承')">承をエンコード</button>
+      <button class="encode-btn btn-part" onclick="startEncode('転')">転をエンコード</button>
+      <button class="encode-btn btn-part" onclick="startEncode('結')">結をエンコード</button>
+    </div>
+  </div>
+
+  <div id="status"></div>
+
+  <script>
+    const API_BASE = "http://localhost:3456";
+    const jobs = {};
+
+    async function startEncode(target) {
+      const btn = event.target;
+      btn.disabled = true;
+      const useSplit = document.getElementById("useSplit").checked;
+
+      try {
+        const res = await fetch(`${API_BASE}/api/encode`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ target, useSplit }),
+        });
+        const data = await res.json();
+        if (data.error) {
+          alert("エラー: " + data.error);
+          btn.disabled = false;
+          return;
+        }
+        jobs[data.jobId] = { target, useSplit, state: "running", progress: 0, output: data.output };
+        renderStatus();
+        pollJob(data.jobId);
+      } catch (e) {
+        alert("エラー: " + e.message);
+        btn.disabled = false;
+      }
+    }
+
+    async function pollJob(jobId) {
+      while (true) {
+        await new Promise(r => setTimeout(r, 2000));
+        try {
+          const res = await fetch(`${API_BASE}/api/encode/${jobId}`);
+          const data = await res.json();
+          jobs[jobId].state = data.state;
+          jobs[jobId].progress = data.progress || 0;
+          jobs[jobId].message = data.message || "";
+          renderStatus();
+          if (data.state === "done" || data.state === "error") {
+            // ボタンを再有効化
+            document.querySelectorAll(".encode-btn").forEach(b => b.disabled = false);
+            break;
+          }
+        } catch {
+          break;
+        }
+      }
+    }
+
+    function renderStatus() {
+      const container = document.getElementById("status");
+      container.innerHTML = Object.entries(jobs).map(([id, job]) => {
+        const label = (job.target === "full" ? "全体" : job.target) + (job.useSplit ? "（分割）" : "");
+        const stateClass = job.state === "done" ? "done" : job.state === "error" ? "error" : "running";
+        const stateText = job.state === "done" ? "完了" : job.state === "error" ? "エラー" : "エンコード中...";
+        const spinner = job.state === "running" ? '<span class="loading"></span>' : "";
+        return `<div class="status-item">
+          <div class="label">${label}エンコード</div>
+          <div class="state ${stateClass}">${stateText}${spinner} ${job.message || ""}</div>
+          ${job.state === "running" ? `<div class="progress-bar"><div class="progress-bar-fill" style="width:${job.progress}%"></div></div>` : ""}
+          <div class="output-path">${job.output || ""}</div>
+        </div>`;
+      }).join("");
+    }
+  </script>
+</body>
+</html>

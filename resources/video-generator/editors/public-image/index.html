@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>画像差し替えエディタ</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <header>
+    <h1>画像差し替えエディタ</h1>
+    <div id="stats"></div>
+  </header>
+
+  <div id="editor">
+    <!-- 左: 現在の画像とモデル画像 -->
+    <div id="image-area">
+      <div id="scene-nav">
+        <button id="btn-prev">&#9664; 前</button>
+        <span id="scene-label">シーン #001</span>
+        <button id="btn-next">次 &#9654;</button>
+      </div>
+
+      <div id="main-image-container">
+        <h3>現在の画像</h3>
+        <img id="main-image" src="" alt="シーン画像" />
+        <div id="no-image" class="hidden">画像なし</div>
+      </div>
+
+      <div id="model-image-container">
+        <h3>モデル画像（作業時の参考用）</h3>
+        <div id="model-selector">
+          <select id="model-select">
+            <option value="">表示しない</option>
+          </select>
+        </div>
+        <img id="model-image" src="" alt="モデル画像" class="hidden" />
+      </div>
+    </div>
+
+    <!-- 右: 取り込み・プレビュー・差し替え -->
+    <div id="edit-area">
+      <div id="scene-text-box">
+        <h3>台本テキスト</h3>
+        <div id="scene-text"></div>
+      </div>
+
+      <div id="upload-box">
+        <h3>取り込む画像</h3>
+        <div id="drop-zone">
+          <div class="drop-icon">📥</div>
+          <p class="drop-main">ここに画像をドラッグ＆ドロップ</p>
+          <p class="drop-sub">または</p>
+          <button id="btn-pick-file" class="btn-primary">ファイルを選択</button>
+          <input type="file" id="file-input" accept="image/*" hidden />
+          <p class="drop-hint">ChatGPT等で生成した画像をそのまま使えます。<br>サイズ・縦横比は自動で動画用（1376×768）に調整されます。</p>
+        </div>
+      </div>
+
+      <div id="preview-box" class="hidden">
+        <h3>取り込みプレビュー（1376×768に自動調整済み）</h3>
+        <img id="preview-image" src="" alt="プレビュー" />
+        <p id="preview-filename" class="preview-meta"></p>
+        <div class="action-row">
+          <button id="btn-cancel" class="btn-secondary">キャンセル</button>
+          <button id="btn-commit" class="btn-success">この画像で差し替え</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script src="app.js"></script>
+</body>
+</html>

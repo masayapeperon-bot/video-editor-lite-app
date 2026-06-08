@@ -1,0 +1,191 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>音声レビュー＆修正エディタ</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <header>
+    <h1>音声レビュー＆修正エディタ</h1>
+    <div id="stats"></div>
+  </header>
+
+  <div id="filters">
+    <button class="filter-btn active" data-filter="all">全て</button>
+    <button class="filter-btn" data-filter="起">起</button>
+    <button class="filter-btn" data-filter="承">承</button>
+    <button class="filter-btn" data-filter="転">転</button>
+    <button class="filter-btn" data-filter="結">結</button>
+  </div>
+
+  <div id="scene-list"></div>
+
+  <!-- シーン詳細モーダル -->
+  <div id="detail-overlay" class="hidden">
+    <div id="detail-panel">
+      <div id="detail-header">
+        <h2 id="detail-title"></h2>
+        <button id="detail-close">&times;</button>
+      </div>
+
+      <div id="detail-tabs">
+        <button class="tab-btn active" data-tab="pronunciation">読み修正</button>
+        <button class="tab-btn" data-tab="timing">間の調整</button>
+        <button class="tab-btn" data-tab="intonation">イントネーション</button>
+      </div>
+
+      <!-- 読み修正タブ -->
+      <div id="tab-pronunciation" class="tab-content active">
+        <div class="text-compare">
+          <div>
+            <h3>台本テキスト</h3>
+            <div id="original-text" class="text-box"></div>
+          </div>
+          <div>
+            <h3>TTS送信テキスト</h3>
+            <div id="tts-text" class="text-box"></div>
+          </div>
+        </div>
+
+        <div id="pron-section">
+          <h3>発音辞書</h3>
+          <div id="pron-list"></div>
+          <div class="pron-add">
+            <input id="pron-key" placeholder="漢字語句" />
+            <span>→</span>
+            <input id="pron-value" placeholder="ひらがな読み" />
+            <button id="pron-add-btn">追加</button>
+          </div>
+        </div>
+
+        <div id="text-override-section">
+          <h3>テキスト直接編集（ワンオフ）</h3>
+          <textarea id="text-override" rows="3"></textarea>
+        </div>
+
+        <div class="action-row">
+          <button id="btn-preview" class="btn-primary">プレビュー再生成</button>
+          <button id="btn-commit" class="btn-success" disabled>確定・差し替え</button>
+        </div>
+
+        <div id="preview-player" class="hidden">
+          <h3>プレビュー</h3>
+          <audio id="preview-audio" controls></audio>
+          <div id="preview-compare">
+            <button id="btn-play-current">現在の音声を再生</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- 間の調整タブ -->
+      <div id="tab-timing" class="tab-content">
+        <div id="waveform-container">
+          <canvas id="waveform-canvas" width="800" height="150"></canvas>
+          <div id="waveform-cursor"></div>
+        </div>
+        <div id="timing-controls">
+          <button id="btn-play-timing">再生</button>
+          <button id="btn-stop-timing">停止</button>
+          <span id="timing-position">0:00.0 / 0:00.0</span>
+        </div>
+        <div id="silence-list">
+          <h3>検出された無音区間</h3>
+          <div id="silence-items"></div>
+        </div>
+        <div class="action-row">
+          <label>カーソル位置に無音挿入:</label>
+          <select id="silence-duration">
+            <option value="200">200ms</option>
+            <option value="500" selected>500ms</option>
+            <option value="1000">1000ms</option>
+          </select>
+          <button id="btn-insert-silence">挿入</button>
+        </div>
+        <div class="action-row" style="margin-top:12px;">
+          <button id="btn-timing-commit" class="btn-success" style="display:none;" onclick="commitTimingChanges()">確定・差し替え</button>
+        </div>
+      </div>
+
+      <!-- イントネーションタブ -->
+      <div id="tab-intonation" class="tab-content">
+        <h3 class="section-label">全体のイントネーション調整</h3>
+        <div class="slider-group">
+          <label>Stability: <span id="val-stability">0.50</span></label>
+          <input type="range" id="slider-stability" min="0" max="1" step="0.05" value="0.5" />
+          <small>低い=表現豊か / 高い=安定</small>
+        </div>
+        <div class="slider-group">
+          <label>Similarity Boost: <span id="val-similarity">0.75</span></label>
+          <input type="range" id="slider-similarity" min="0" max="1" step="0.05" value="0.75" />
+        </div>
+        <div class="slider-group">
+          <label>Style: <span id="val-style">0.50</span></label>
+          <input type="range" id="slider-style" min="0" max="1" step="0.05" value="0.5" />
+          <small>低い=抑えめ / 高い=感情的</small>
+        </div>
+        <div id="presets">
+          <h3>クイックプリセット</h3>
+          <button class="preset-btn" data-stability="0.65" data-style="0.3">落ち着いたナレーション</button>
+          <button class="preset-btn" data-stability="0.3" data-style="0.7">ドラマチック</button>
+          <button class="preset-btn" data-stability="0.45" data-style="0.5">自然な会話</button>
+          <button class="preset-btn" data-stability="0.5" data-style="0.5">デフォルト</button>
+        </div>
+        <div class="action-row">
+          <button id="btn-intonation-preview" class="btn-primary">この設定でプレビュー</button>
+          <button id="btn-intonation-commit" class="btn-success" disabled>確定・差し替え</button>
+        </div>
+        <div id="intonation-preview-player" class="hidden">
+          <audio id="intonation-audio" controls></audio>
+        </div>
+
+        <hr class="section-divider" />
+
+        <h3 class="section-label">部分イントネーション差し替え</h3>
+        <p class="section-desc">テキストの一部を選択して、その部分だけ異なるパラメータで再生成・差し替えます。</p>
+
+        <div id="splice-waveform-container">
+          <canvas id="splice-waveform" width="800" height="120"></canvas>
+        </div>
+        <div id="splice-controls">
+          <button id="splice-play">再生</button>
+          <button id="splice-stop">停止</button>
+          <span id="splice-position">0:00.0 / 0:00.0</span>
+          <span id="splice-selection-info" class="splice-info"></span>
+        </div>
+
+        <div id="splice-text-container">
+          <h4>テキストから範囲を選択（ドラッグで選択）</h4>
+          <div id="splice-text" class="text-box selectable"></div>
+          <div id="splice-selected-range" class="hidden">
+            <span>選択範囲: <strong id="splice-range-text"></strong></span>
+            <span id="splice-range-time" class="splice-time"></span>
+          </div>
+        </div>
+
+        <div class="slider-group">
+          <label>Stability (部分): <span id="val-splice-stability">0.30</span></label>
+          <input type="range" id="slider-splice-stability" min="0" max="1" step="0.05" value="0.3" />
+        </div>
+        <div class="slider-group">
+          <label>Style (部分): <span id="val-splice-style">0.70</span></label>
+          <input type="range" id="slider-splice-style" min="0" max="1" step="0.05" value="0.7" />
+        </div>
+
+        <div class="action-row">
+          <button id="btn-splice-preview" class="btn-primary" disabled>選択範囲をプレビュー</button>
+          <button id="btn-splice-commit" class="btn-success" disabled>確定・差し替え</button>
+        </div>
+        <div id="splice-preview-player" class="hidden">
+          <h4>差し替えプレビュー（全体）</h4>
+          <audio id="splice-audio" controls></audio>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script src="waveform.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>

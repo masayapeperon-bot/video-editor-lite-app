@@ -1,0 +1,535 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>字幕エディタ</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Hiragino Sans", "Noto Sans JP", sans-serif;
+      background: #1a1a2e;
+      color: #e0e0e0;
+      line-height: 1.6;
+      height: 100vh;
+      overflow: hidden;
+    }
+    header {
+      background: #16213e;
+      padding: 10px 20px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      border-bottom: 1px solid #333;
+    }
+    header h1 { font-size: 16px; color: #fff; }
+
+    #editor {
+      display: flex;
+      height: calc(100vh - 45px);
+    }
+
+    #preview-area {
+      width: 55%;
+      padding: 16px;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      border-right: 1px solid #333;
+      overflow-y: auto;
+    }
+
+    #edit-area {
+      width: 45%;
+      padding: 16px;
+      overflow-y: auto;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+
+    h3 { font-size: 13px; color: #888; margin-bottom: 6px; }
+
+    /* プレビュー: テロップ風表示 */
+    .telop-preview {
+      background: #000;
+      border-radius: 4px;
+      padding: 16px;
+      min-height: 100px;
+    }
+
+    .telop-page {
+      background: rgba(0,0,0,0.75);
+      padding: 12px 24px;
+      border-radius: 4px;
+      margin-bottom: 8px;
+      border: 2px solid transparent;
+      cursor: pointer;
+    }
+    .telop-page.active { border-color: #1a6fb5; }
+    .telop-page-label {
+      font-size: 11px;
+      color: #666;
+      margin-bottom: 4px;
+    }
+    .telop-line {
+      color: #fff;
+      font-size: 20px;
+      font-weight: 900;
+      text-align: center;
+      line-height: 1.5;
+      font-family: "Noto Sans JP", sans-serif;
+    }
+
+    /* 編集エリア */
+    .page-editor {
+      background: #222244;
+      padding: 12px;
+      border-radius: 4px;
+      margin-bottom: 8px;
+    }
+    .page-editor-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 8px;
+    }
+    .page-editor-header span { font-size: 12px; color: #888; }
+
+    .line-input {
+      width: 100%;
+      background: #1a1a2e;
+      border: 1px solid #444;
+      color: #e0e0e0;
+      padding: 6px 8px;
+      border-radius: 3px;
+      font-size: 14px;
+      margin-bottom: 4px;
+      font-family: "Noto Sans JP", sans-serif;
+    }
+
+    .char-count { font-size: 11px; color: #666; text-align: right; }
+    .char-count.over { color: #e94560; }
+
+    .page-actions button {
+      background: #2a2a4a;
+      color: #aaa;
+      border: 1px solid #444;
+      padding: 2px 10px;
+      border-radius: 3px;
+      cursor: pointer;
+      font-size: 11px;
+      margin-right: 4px;
+    }
+    .page-actions button:hover { background: #333366; color: #fff; }
+
+    .btn-primary {
+      background: #0f3460;
+      color: #fff;
+      border: none;
+      padding: 8px 20px;
+      border-radius: 4px;
+      cursor: pointer;
+      font-size: 13px;
+    }
+    .btn-primary:hover { background: #1a6fb5; }
+
+    .btn-success {
+      background: #1b4332;
+      color: #95d5b2;
+      border: 1px solid #2d6a4f;
+      padding: 8px 20px;
+      border-radius: 4px;
+      cursor: pointer;
+      font-size: 13px;
+    }
+    .btn-success:hover { background: #2d6a4f; }
+
+    .btn-secondary {
+      background: #2a2a4a;
+      color: #aaa;
+      border: 1px solid #444;
+      padding: 8px 16px;
+      border-radius: 4px;
+      cursor: pointer;
+      font-size: 13px;
+    }
+    .btn-secondary:hover { background: #333366; color: #fff; }
+
+    .action-row { display: flex; gap: 8px; align-items: center; }
+
+    #original-text {
+      background: #222244;
+      padding: 10px;
+      border-radius: 4px;
+      font-size: 13px;
+      line-height: 1.8;
+      white-space: pre-wrap;
+    }
+
+    .info { font-size: 12px; color: #888; }
+
+    /* タイミング調整 */
+    .timing-section { margin-top: 8px; }
+    .timing-row {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 6px 8px;
+      background: #2a2a4a;
+      border-radius: 4px;
+      margin-bottom: 6px;
+      font-size: 13px;
+    }
+    .timing-row label { color: #888; white-space: nowrap; }
+    .timing-input {
+      width: 80px;
+      background: #1a1a2e;
+      border: 1px solid #444;
+      color: #e0e0e0;
+      padding: 4px 6px;
+      border-radius: 3px;
+      font-size: 13px;
+      font-family: monospace;
+      text-align: right;
+    }
+    .timing-unit { color: #666; font-size: 12px; }
+    .timing-adjust button {
+      background: #333366;
+      color: #aaa;
+      border: 1px solid #444;
+      padding: 2px 6px;
+      border-radius: 2px;
+      cursor: pointer;
+      font-size: 11px;
+    }
+    .timing-adjust button:hover { background: #444488; color: #fff; }
+    .timing-duration { color: #666; font-size: 12px; }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>字幕エディタ</h1>
+    <span id="scene-label" style="color:#888;font-size:13px;"></span>
+  </header>
+
+  <div id="editor">
+    <div id="preview-area">
+      <div>
+        <h3>元テキスト</h3>
+        <div id="original-text"></div>
+      </div>
+      <div>
+        <h3>テロッププレビュー（クリックでページ選択）</h3>
+        <div id="telop-preview" class="telop-preview"></div>
+      </div>
+      <p class="info">24文字/行、最大3行/ページ</p>
+
+      <div id="audio-preview-section">
+        <h3>タイミングプレビュー</h3>
+        <div id="audio-controls" style="display:flex;gap:8px;align-items:center;margin-bottom:8px;">
+          <button id="btn-audio-play" class="btn-primary" style="padding:6px 16px;">再生</button>
+          <button id="btn-audio-stop" class="btn-secondary" style="padding:6px 16px;">停止</button>
+          <span id="audio-time" style="font-family:monospace;font-size:13px;color:#888;">0:00.0 / 0:00.0</span>
+        </div>
+        <div id="live-telop" style="background:#000;border-radius:4px;padding:16px;min-height:80px;display:flex;align-items:center;justify-content:center;">
+          <div id="live-telop-text" style="text-align:center;"></div>
+        </div>
+        <div id="live-page-indicator" style="font-size:11px;color:#666;margin-top:4px;text-align:center;"></div>
+      </div>
+    </div>
+
+    <div id="edit-area">
+      <h3>ページ編集</h3>
+      <div id="page-editors"></div>
+      <div class="action-row">
+        <button id="btn-add-page" class="btn-secondary">+ ページ追加</button>
+      </div>
+      <div class="action-row" style="margin-top:12px;">
+        <button id="btn-reset" class="btn-secondary">自動分割に戻す</button>
+        <button id="btn-save" class="btn-success">確定・保存</button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const API_BASE = "http://localhost:3456";
+    let sceneId = null;
+    let pages = []; // [["行1","行2"],["行1"]]
+    let pageSwitchTimes = []; // [秒, 秒, ...]
+    let durationSec = 0;
+
+    async function init() {
+      const hash = location.hash.match(/^#scene\/(\d+)$/);
+      if (!hash) return;
+      sceneId = Number(hash[1]);
+
+      // シーンデータ取得
+      const res = await fetch(`${API_BASE}/api/scenes/${sceneId}`);
+      const scene = await res.json();
+
+      document.getElementById("scene-label").textContent =
+        `シーン #${String(sceneId).padStart(3, "0")} (${scene.part}-${scene.partSceneNumber})`;
+      document.getElementById("original-text").textContent = scene.text;
+
+      // scenes.json から manualPages + タイミング を取得
+      const scenesRes = await fetch(`${API_BASE}/api/telop/${sceneId}`);
+      const telopData = await scenesRes.json();
+      pages = telopData.pages;
+      pageSwitchTimes = telopData.pageSwitchTimes || [];
+      durationSec = telopData.durationSec || 0;
+
+      render();
+      setupAudioPreview();
+      updateLiveTelop(0);
+    }
+
+    function render() {
+      renderPreview();
+      renderEditors();
+      renderTiming();
+    }
+
+    function renderPreview() {
+      const container = document.getElementById("telop-preview");
+      container.innerHTML = pages.map((page, pi) => {
+        const startSec = pi === 0 ? 0 : (pageSwitchTimes[pi - 1] || 0);
+        const endSec = pi < pages.length - 1 ? (pageSwitchTimes[pi] || durationSec) : durationSec;
+        const dur = (endSec - startSec).toFixed(1);
+        return `<div class="telop-page" data-page="${pi}" style="cursor:pointer;" title="クリックでここから再生">
+          <div class="telop-page-label">ページ ${pi + 1}/${pages.length} (${startSec.toFixed(1)}s〜${endSec.toFixed(1)}s, ${dur}s間)</div>
+          ${page.map(line => `<div class="telop-line">${escapeHtml(line)}</div>`).join("")}
+        </div>`;
+      }).join("");
+
+      // ページクリックでその位置から再生
+      container.querySelectorAll(".telop-page").forEach(el => {
+        el.addEventListener("click", () => {
+          const pi = Number(el.dataset.page);
+          const startSec = pi === 0 ? 0 : (pageSwitchTimes[pi - 1] || 0);
+          playFromPosition(startSec);
+        });
+      });
+    }
+
+    function renderEditors() {
+      const container = document.getElementById("page-editors");
+      container.innerHTML = pages.map((page, pi) =>
+        `<div class="page-editor" data-page="${pi}">
+          <div class="page-editor-header">
+            <span>ページ ${pi + 1}</span>
+            <div class="page-actions">
+              <button onclick="addLine(${pi})">+ 行追加</button>
+              ${pages.length > 1 ? `<button onclick="removePage(${pi})">ページ削除</button>` : ""}
+            </div>
+          </div>
+          ${page.map((line, li) =>
+            `<input class="line-input" data-page="${pi}" data-line="${li}" value="${escapeHtml(line)}" />
+             <div class="char-count ${line.length > 24 ? 'over' : ''}">${line.length}/24文字</div>`
+          ).join("")}
+        </div>`
+      ).join("");
+
+      // 入力イベント
+      container.querySelectorAll(".line-input").forEach(input => {
+        input.addEventListener("input", (e) => {
+          const pi = Number(e.target.dataset.page);
+          const li = Number(e.target.dataset.line);
+          pages[pi][li] = e.target.value;
+          renderPreview();
+          // 文字数更新
+          const counter = e.target.nextElementSibling;
+          counter.textContent = `${e.target.value.length}/24文字`;
+          counter.className = `char-count ${e.target.value.length > 24 ? 'over' : ''}`;
+        });
+      });
+    }
+
+    function addLine(pageIdx) {
+      if (pages[pageIdx].length < 3) {
+        pages[pageIdx].push("");
+        render();
+      }
+    }
+
+    function removePage(pageIdx) {
+      pages.splice(pageIdx, 1);
+      render();
+    }
+
+    function renderTiming() {
+      // ページ編集エリアの下にタイミング調整を表示
+      let existing = document.getElementById("timing-editors");
+      if (existing) existing.remove();
+
+      if (pages.length <= 1) return;
+
+      // pageSwitchTimesが空の場合、文字数比率で初期値を自動生成
+      if (pageSwitchTimes.length !== pages.length - 1 && durationSec > 0) {
+        const effectiveDuration = Math.max(durationSec - 0.3, 1);
+        const allText = pages.map(p => p.join("")).join("");
+        const totalChars = allText.length || 1;
+        pageSwitchTimes = [];
+        let cumChars = 0;
+        for (let i = 0; i < pages.length - 1; i++) {
+          cumChars += pages[i].map(l => l.length).reduce((a, b) => a + b, 0);
+          pageSwitchTimes.push(Math.round((cumChars / totalChars) * effectiveDuration * 10) / 10);
+        }
+      }
+
+      const section = document.createElement("div");
+      section.id = "timing-editors";
+      section.className = "timing-section";
+      section.innerHTML = `<h3>ページ切り替えタイミング</h3>
+        <div class="timing-duration">音声の長さ: ${durationSec.toFixed(2)}秒</div>
+        ${pageSwitchTimes.map((t, i) =>
+          `<div class="timing-row">
+            <label>ページ${i + 1}→${i + 2}:</label>
+            <input class="timing-input" type="number" step="0.1" min="0" max="${durationSec.toFixed(1)}" value="${t.toFixed(1)}" data-idx="${i}" />
+            <span class="timing-unit">秒</span>
+            <div class="timing-adjust">
+              <button onclick="adjustTiming(${i}, -0.5)">-0.5</button>
+              <button onclick="adjustTiming(${i}, -0.1)">-0.1</button>
+              <button onclick="adjustTiming(${i}, +0.1)">+0.1</button>
+              <button onclick="adjustTiming(${i}, +0.5)">+0.5</button>
+            </div>
+          </div>`
+        ).join("")}`;
+
+      document.getElementById("page-editors").after(section);
+
+      // 入力イベント
+      section.querySelectorAll(".timing-input").forEach(input => {
+        input.addEventListener("change", (e) => {
+          const idx = Number(e.target.dataset.idx);
+          pageSwitchTimes[idx] = Math.max(0, Math.min(durationSec, parseFloat(e.target.value) || 0));
+          renderPreview();
+        });
+      });
+    }
+
+    function adjustTiming(idx, delta) {
+      pageSwitchTimes[idx] = Math.max(0, Math.min(durationSec,
+        Math.round((pageSwitchTimes[idx] + delta) * 10) / 10
+      ));
+      render();
+    }
+
+    document.getElementById("btn-add-page").addEventListener("click", () => {
+      pages.push([""]);
+      render();
+    });
+
+    document.getElementById("btn-reset").addEventListener("click", async () => {
+      const res = await fetch(`${API_BASE}/api/telop/${sceneId}/auto`);
+      const data = await res.json();
+      pages = data.pages;
+      // タイミングもリセット（自動計算に任せる）
+      pageSwitchTimes = [];
+      render();
+    });
+
+    document.getElementById("btn-save").addEventListener("click", async () => {
+      const res = await fetch(`${API_BASE}/api/telop/${sceneId}`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ pages, pageSwitchTimes }),
+      });
+      if (res.ok) {
+        alert("字幕を保存しました");
+        if (window.parent !== window) {
+          window.parent.postMessage({ type: "editor-updated" }, "*");
+        }
+      }
+    });
+
+    // ── 指定位置から再生 ──
+    function playFromPosition(sec) {
+      if (!audioEl) setupAudioPreview();
+      audioEl.currentTime = sec;
+      audioEl.play();
+      updateLiveTelop(sec);
+      animateTelop();
+    }
+
+    // ── 音声再生 + リアルタイムテロッププレビュー ──
+    let audioEl = null;
+    let animFrameId = null;
+
+    function setupAudioPreview() {
+      if (audioEl) { audioEl.pause(); audioEl = null; }
+      if (animFrameId) { cancelAnimationFrame(animFrameId); animFrameId = null; }
+
+      audioEl = new Audio(`${API_BASE}/api/scenes/${sceneId}/audio`);
+      audioEl.addEventListener("loadedmetadata", () => {
+        document.getElementById("audio-time").textContent =
+          `0:00.0 / ${formatTimeTelop(audioEl.duration)}`;
+      });
+      audioEl.addEventListener("ended", () => {
+        if (animFrameId) { cancelAnimationFrame(animFrameId); animFrameId = null; }
+        updateLiveTelop(0);
+      });
+    }
+
+    document.getElementById("btn-audio-play").addEventListener("click", () => {
+      if (!audioEl) setupAudioPreview();
+      audioEl.play();
+      animateTelop();
+    });
+
+    document.getElementById("btn-audio-stop").addEventListener("click", () => {
+      if (audioEl) { audioEl.pause(); audioEl.currentTime = 0; }
+      if (animFrameId) { cancelAnimationFrame(animFrameId); animFrameId = null; }
+      updateLiveTelop(0);
+    });
+
+    function animateTelop() {
+      if (!audioEl || audioEl.paused) return;
+      const currentSec = audioEl.currentTime;
+      document.getElementById("audio-time").textContent =
+        `${formatTimeTelop(currentSec)} / ${formatTimeTelop(audioEl.duration)}`;
+      updateLiveTelop(currentSec);
+
+      // プレビュー一覧の現在ページをハイライト
+      document.querySelectorAll(".telop-page").forEach((el, i) => {
+        el.style.borderColor = (i === getCurrentPageIndex(currentSec)) ? "#1a6fb5" : "transparent";
+      });
+
+      animFrameId = requestAnimationFrame(animateTelop);
+    }
+
+    function getCurrentPageIndex(currentSec) {
+      let pageIndex = 0;
+      for (let i = 0; i < pageSwitchTimes.length; i++) {
+        if (currentSec >= pageSwitchTimes[i]) pageIndex = i + 1;
+      }
+      return Math.min(pageIndex, pages.length - 1);
+    }
+
+    function updateLiveTelop(currentSec) {
+      const pi = getCurrentPageIndex(currentSec);
+      const page = pages[pi] || [""];
+      const container = document.getElementById("live-telop-text");
+      container.innerHTML = page.map(line =>
+        `<div style="color:#fff;font-size:18px;font-weight:900;line-height:1.5;font-family:'Noto Sans JP',sans-serif;text-shadow:2px 2px 0 #000,-2px -2px 0 #000,2px -2px 0 #000,-2px 2px 0 #000;">${escapeHtml(line)}</div>`
+      ).join("");
+      document.getElementById("live-page-indicator").textContent =
+        `ページ ${pi + 1}/${pages.length}`;
+    }
+
+    function formatTimeTelop(sec) {
+      if (!sec || isNaN(sec)) return "0:00.0";
+      const m = Math.floor(sec / 60);
+      const s = sec % 60;
+      return `${m}:${s.toFixed(1).padStart(4, "0")}`;
+    }
+
+    function escapeHtml(str) {
+      return str.replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;");
+    }
+
+    window.addEventListener("hashchange", init);
+    init();
+  </script>
+</body>
+</html>

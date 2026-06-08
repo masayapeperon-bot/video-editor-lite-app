@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<title>効果音差し替えエディタ</title>
+<link rel="stylesheet" href="style.css">
+<script src="https://unpkg.com/wavesurfer.js@7.8.6/dist/wavesurfer.min.js"></script>
+<script src="https://unpkg.com/wavesurfer.js@7.8.6/dist/plugins/regions.min.js"></script>
+</head>
+<body>
+  <div id="app">
+    <aside id="scene-list">
+      <header class="panel-header">
+        <h2>シーン一覧</h2>
+        <div class="part-filter">
+          <button data-part="all" class="part-btn active">全</button>
+          <button data-part="起" class="part-btn">起</button>
+          <button data-part="承" class="part-btn">承</button>
+          <button data-part="転" class="part-btn">転</button>
+          <button data-part="結" class="part-btn">結</button>
+        </div>
+      </header>
+      <ul id="scenes-ul"></ul>
+    </aside>
+
+    <main id="scene-detail">
+      <div id="placeholder">
+        <p>左のシーン一覧からシーンを選択してください</p>
+      </div>
+
+      <div id="editor-body" style="display:none;">
+        <header class="detail-header">
+          <h2><span id="detail-id"></span> <span id="detail-part" class="badge"></span></h2>
+          <p id="detail-text" class="scene-text"></p>
+        </header>
+
+        <section class="block">
+          <h3>1. シーン音声 — 差し替えたい範囲をドラッグで指定</h3>
+          <div id="scene-wave" class="wave-container"></div>
+          <div id="telop-overlay" class="telop-overlay"></div>
+          <div class="info-row">
+            <button id="play-scene" class="ghost-btn">▶ 再生</button>
+            <button id="restart-scene" class="ghost-btn">⏮ 最初から</button>
+            <button id="pause-scene" class="ghost-btn">⏸ 停止</button>
+            <span id="scene-range-info" class="info-text"></span>
+          </div>
+        </section>
+
+        <section class="block">
+          <h3>2. 効果音ファイルを選択</h3>
+          <div class="sfx-source-row">
+            <label class="upload-btn">
+              新規アップロード
+              <input type="file" id="sfx-upload" accept="audio/*" hidden>
+            </label>
+            <select id="sfx-existing">
+              <option value="">— 既存ファイルから選択 —</option>
+            </select>
+            <span id="sfx-name" class="info-text"></span>
+          </div>
+        </section>
+
+        <section class="block" id="sfx-block" style="display:none;">
+          <h3>3. 効果音の使用区間（左右のハンドルで位置を調整）</h3>
+          <div id="sfx-wave" class="wave-container"></div>
+          <div class="info-row">
+            <button id="play-sfx" class="ghost-btn">▶ 効果音だけ再生</button>
+            <button id="restart-sfx" class="ghost-btn">⏮ 最初から</button>
+            <button id="pause-sfx" class="ghost-btn">⏸</button>
+            <span id="sfx-range-info" class="info-text"></span>
+          </div>
+          <div class="info-row">
+            <label class="check-row">
+              <input type="checkbox" id="fade-out">
+              <span>末尾フェードアウト（0.3秒）</span>
+            </label>
+          </div>
+        </section>
+
+        <section class="block" id="action-block" style="display:none;">
+          <h3>4. 確認・保存</h3>
+          <div class="action-row">
+            <button id="preview-mix" class="primary-btn">▶ ミックス再生</button>
+            <button id="pause-mix" class="ghost-btn">⏸ 停止</button>
+            <button id="save-sfx" class="primary-btn save-btn">確定・保存</button>
+            <button id="remove-sfx" class="danger-btn">この効果音を削除</button>
+          </div>
+          <p id="save-status" class="status-text"></p>
+        </section>
+      </div>
+    </main>
+  </div>
+
+  <script src="app.js"></script>
+</body>
+</html>

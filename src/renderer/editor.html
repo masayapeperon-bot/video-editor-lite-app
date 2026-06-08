@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8" />
+  <title>編集画面</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <header>
+    <h1 id="proj-title">編集中</h1>
+    <div class="actions">
+      <button class="btn btn-success" id="btn-export">納品データを書き出し</button>
+      <button class="btn" id="btn-back">プロジェクト一覧へ戻る</button>
+    </div>
+  </header>
+
+  <nav class="editor-tabs">
+    <button class="tab active" data-tab="remotion">プレビュー（Remotion）</button>
+    <button class="tab" data-tab="audio">音声・字幕エディタ</button>
+    <button class="tab" data-tab="image">画像エディタ</button>
+    <button class="tab" data-tab="sfx">効果音エディタ</button>
+    <button class="tab" data-tab="encode">エンコード（通常は不要）</button>
+  </nav>
+
+  <div id="workflow-hint" style="background:#1b4332;color:#95d5b2;padding:8px 24px;font-size:12px;border-bottom:1px solid #2d6a4f;">
+    💡 編集が完了したら、エンコードせずに右上の「<strong>納品データを書き出し</strong>」を押すだけでOKです。最終的なエンコードは依頼者側で行います。
+  </div>
+
+  <main style="padding:0; height: calc(100vh - 145px);">
+    <div class="tab-content active" id="tab-remotion">
+      <webview src="http://localhost:3000" id="wv-remotion" allowpopups></webview>
+    </div>
+    <div class="tab-content" id="tab-audio">
+      <webview src="http://localhost:3456" id="wv-audio" allowpopups></webview>
+    </div>
+    <div class="tab-content" id="tab-image">
+      <webview src="http://localhost:3457" id="wv-image" allowpopups></webview>
+    </div>
+    <div class="tab-content" id="tab-sfx">
+      <webview src="http://localhost:3459" id="wv-sfx" allowpopups></webview>
+    </div>
+    <div class="tab-content" id="tab-encode">
+      <webview src="http://localhost:3456/encode" id="wv-encode" allowpopups></webview>
+    </div>
+  </main>
+
+  <div class="toast" id="toast"></div>
+
+  <div class="loading-overlay" id="loading">
+    <div class="loading-box">
+      <div class="spinner"></div>
+      <div class="loading-text" id="loading-text">処理中...</div>
+      <div id="loading-detail" style="margin-top:8px; font-size:11px; color:#666;"></div>
+    </div>
+  </div>
+
+  <script src="editor.js"></script>
+</body>
+</html>

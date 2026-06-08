@@ -1,0 +1,97 @@
+{
+  "name": "video-editor-lite-app",
+  "version": "0.1.0",
+  "description": "動画編集Lite版（外注向け・画像取込専用）",
+  "main": "src/main/main.js",
+  "scripts": {
+    "start": "electron .",
+    "dev": "electron . --dev",
+    "pack": "electron-builder --dir",
+    "build:mac": "electron-builder --mac",
+    "build:win": "electron-builder --win",
+    "build:all": "electron-builder --mac --win",
+    "postinstall": "electron-builder install-app-deps"
+  },
+  "author": "",
+  "license": "UNLICENSED",
+  "private": true,
+  "devDependencies": {
+    "electron": "^33.0.0",
+    "electron-builder": "^25.1.8"
+  },
+  "dependencies": {
+    "archiver": "^7.0.1",
+    "archiver-utils": "^5.0.2",
+    "compress-commons": "^7.0.1",
+    "electron-store": "^8.2.0",
+    "electron-updater": "^6.3.9",
+    "extract-zip": "^2.0.1",
+    "ffmpeg-static": "^5.3.0",
+    "ffprobe-static": "^3.1.0",
+    "zip-stream": "^7.0.5"
+  },
+  "build": {
+    "appId": "com.roudoku.video-editor-lite",
+    "productName": "動画編集Lite版",
+    "directories": {
+      "output": "dist",
+      "buildResources": "build"
+    },
+    "files": [
+      "src/**/*",
+      "!**/node_modules/*/{CHANGELOG.md,README.md,README,readme.md,readme}",
+      "!**/node_modules/*/{test,__tests__,tests,powered-test,example,examples}",
+      "!**/node_modules/*.d.ts",
+      "!**/node_modules/.bin"
+    ],
+    "extraResources": [
+      {
+        "from": "resources/video-generator",
+        "to": "video-generator",
+        "filter": [
+          "**/*",
+          "!node_modules/.cache"
+        ]
+      }
+    ],
+    "asarUnpack": [
+      "node_modules/ffmpeg-static/**",
+      "node_modules/ffprobe-static/**"
+    ],
+    "mac": {
+      "target": [
+        {
+          "target": "dmg",
+          "arch": [
+            "arm64",
+            "x64"
+          ]
+        }
+      ],
+      "category": "public.app-category.video",
+      "identity": "-",
+      "gatekeeperAssess": false
+    },
+    "win": {
+      "target": [
+        {
+          "target": "nsis",
+          "arch": [
+            "x64"
+          ]
+        }
+      ]
+    },
+    "nsis": {
+      "oneClick": false,
+      "allowToChangeInstallationDirectory": true,
+      "createDesktopShortcut": true,
+      "createStartMenuShortcut": true
+    },
+    "publish": {
+      "provider": "github",
+      "owner": "masayapeperon-bot",
+      "repo": "video-editor-lite-app"
+    }
+  }
+}

@@ -1,0 +1,247 @@
+* { margin: 0; padding: 0; box-sizing: border-box; }
+
+body {
+  font-family: -apple-system, BlinkMacSystemFont, "Hiragino Sans", "Noto Sans JP", sans-serif;
+  background: #1a1a2e;
+  color: #e0e0e0;
+  line-height: 1.6;
+  height: 100vh;
+  overflow: hidden;
+}
+
+header {
+  background: #16213e;
+  padding: 10px 20px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  border-bottom: 1px solid #333;
+}
+
+header h1 { font-size: 16px; color: #fff; }
+#stats { font-size: 13px; color: #888; }
+
+#editor {
+  display: flex;
+  height: calc(100vh - 45px);
+}
+
+/* 左: 画像表示エリア */
+#image-area {
+  width: 50%;
+  padding: 12px;
+  overflow-y: auto;
+  border-right: 1px solid #333;
+}
+
+#scene-nav {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  margin-bottom: 12px;
+}
+
+#scene-nav button {
+  background: #0f3460;
+  color: #fff;
+  border: none;
+  padding: 4px 14px;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 13px;
+}
+#scene-nav button:hover { background: #1a6fb5; }
+
+#scene-label {
+  font-size: 14px;
+  font-family: monospace;
+  color: #ccc;
+}
+
+#main-image-container, #model-image-container {
+  margin-bottom: 12px;
+}
+
+#main-image-container h3, #model-image-container h3 {
+  font-size: 13px;
+  color: #888;
+  margin-bottom: 6px;
+}
+
+#main-image {
+  width: 100%;
+  border-radius: 4px;
+  border: 1px solid #333;
+}
+
+#no-image {
+  width: 100%;
+  height: 200px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #222244;
+  border-radius: 4px;
+  color: #666;
+}
+
+#model-selector { margin-bottom: 6px; }
+
+#model-select {
+  background: #222244;
+  color: #e0e0e0;
+  border: 1px solid #444;
+  padding: 4px 8px;
+  border-radius: 4px;
+  font-size: 13px;
+  width: 100%;
+}
+
+#model-image {
+  width: 100%;
+  max-height: 300px;
+  object-fit: contain;
+  border-radius: 4px;
+  border: 1px solid #333;
+  background: #222244;
+}
+
+/* 右: 取り込みエリア */
+#edit-area {
+  width: 50%;
+  padding: 12px;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+#scene-text-box h3, #upload-box h3, #preview-box h3 {
+  font-size: 13px;
+  color: #888;
+  margin-bottom: 6px;
+}
+
+#scene-text {
+  background: #222244;
+  padding: 10px;
+  border-radius: 4px;
+  font-size: 13px;
+  line-height: 1.8;
+  white-space: pre-wrap;
+  max-height: 120px;
+  overflow-y: auto;
+}
+
+/* ドロップゾーン */
+#drop-zone {
+  border: 2px dashed #444;
+  border-radius: 8px;
+  padding: 32px 20px;
+  text-align: center;
+  background: #1d1d35;
+  transition: border-color 0.15s, background 0.15s;
+}
+
+#drop-zone.drag-over {
+  border-color: #1a6fb5;
+  background: #1a2540;
+}
+
+.drop-icon {
+  font-size: 36px;
+  margin-bottom: 8px;
+  opacity: 0.7;
+}
+
+.drop-main {
+  font-size: 14px;
+  color: #ccc;
+  margin-bottom: 6px;
+}
+
+.drop-sub {
+  font-size: 12px;
+  color: #666;
+  margin-bottom: 12px;
+}
+
+.drop-hint {
+  font-size: 11px;
+  color: #777;
+  margin-top: 14px;
+  line-height: 1.6;
+}
+
+/* プレビュー */
+#preview-image {
+  width: 100%;
+  border-radius: 4px;
+  border: 1px solid #333;
+  margin-bottom: 6px;
+}
+
+.preview-meta {
+  font-size: 11px;
+  color: #888;
+  margin-bottom: 10px;
+  font-family: monospace;
+}
+
+.action-row {
+  display: flex;
+  gap: 8px;
+}
+
+.btn-primary {
+  background: #0f3460;
+  color: #fff;
+  border: none;
+  padding: 8px 20px;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 13px;
+}
+.btn-primary:hover { background: #1a6fb5; }
+.btn-primary:disabled { background: #333; color: #666; cursor: not-allowed; }
+
+.btn-secondary {
+  background: #2a2a3e;
+  color: #ccc;
+  border: 1px solid #444;
+  padding: 8px 20px;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 13px;
+}
+.btn-secondary:hover { background: #353550; }
+
+.btn-success {
+  background: #1b4332;
+  color: #95d5b2;
+  border: 1px solid #2d6a4f;
+  padding: 8px 20px;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 13px;
+  flex: 1;
+}
+.btn-success:hover { background: #2d6a4f; }
+.btn-success:disabled { background: #222; color: #555; border-color: #333; cursor: not-allowed; }
+
+.hidden { display: none !important; }
+
+.loading {
+  display: inline-block;
+  width: 16px;
+  height: 16px;
+  border: 2px solid #444;
+  border-top-color: #1a6fb5;
+  border-radius: 50%;
+  animation: spin 0.6s linear infinite;
+  margin-left: 8px;
+  vertical-align: middle;
+}
+
+@keyframes spin { to { transform: rotate(360deg); } }
